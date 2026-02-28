@@ -589,6 +589,11 @@
         }
 
         function playBeep() {
+            // Haptic feedback (vibrate device, if supported)
+            if (navigator.vibrate) {
+                navigator.vibrate([100]); // 100ms vibration
+            }
+
             try {
                 if (!audioCtx) {
                     initAudio();
