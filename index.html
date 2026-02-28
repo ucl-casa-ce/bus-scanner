@@ -528,18 +528,13 @@
                 "reader",
                 {
                     fps: 10,
-                    // Dynamic box size: 2/3 of viewfinder width to improve camera focus distance on phones
-                    qrbox: (viewfinderWidth, viewfinderHeight) => {
-                        return {
-                            width: Math.floor(viewfinderWidth * 0.66),
-                            height: 120
-                        };
-                    },
+                    // Slightly taller box to ensure there's enough room to read
+                    qrbox: { width: 300, height: 120 },
                     rememberLastUsedCamera: true,
                     // An aspect ratio of 1.0 makes it strictly square
                     // An aspect ratio of >1.0 makes it strictly landscape
                     // On mobile portrait, we want it square or very slightly landscape so the height is constrained
-                    aspectRatio: 1.0,
+                    aspectRatio: 1.2,
                     supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA], // Forces camera only, hides "scan an image file" option
                     experimentalFeatures: {
                         useBarCodeDetectorIfSupported: true // Uses fast native browser barcode API if available
