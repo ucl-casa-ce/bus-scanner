@@ -268,14 +268,17 @@
             background: var(--surface-color);
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            padding: 1rem;
+            padding: 0.75rem 1rem;
             display: flex;
-            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
             gap: 0.5rem;
             animation: slideIn 0.3s ease forwards;
             position: relative;
             overflow: hidden;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+            flex-wrap: wrap;
+            /* allow wrapping on extremely tiny screens, but standard mobile should fit */
         }
 
         .scan-item::before {
@@ -303,25 +306,31 @@
 
         .scan-header {
             display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 1rem;
+            align-items: center;
+            gap: 0.5rem;
+            flex-grow: 1;
+            /* Allow it to shrink if needed so time has room */
+            min-width: 0;
         }
 
         .scan-value {
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 700;
             color: var(--text-main);
-            word-break: break-all;
-            flex-grow: 1;
+            /* truncate very long barcodes instead of breaking the entire layout */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .scan-meta {
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            gap: 0.75rem;
             font-size: 0.8rem;
             color: var(--text-muted);
+            white-space: nowrap;
+            /* Keep format and time together */
         }
 
         .scan-format {
@@ -636,14 +645,14 @@
             scansListEl.innerHTML = scannedItems.map(item => `
                 <div class="scan-item">
                     <div class="scan-header">
-                        <span class="scan-value">${escapeHtml(item.text)}</span>
-                        <button class="btn-icon-danger" onclick="deleteItem('${item.id}')" title="Delete scan">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
+                        <span class="scan-value" title="${escapeHtml(item.text)}">${escapeHtml(item.text)}</span>
                     </div>
                     <div class="scan-meta">
-                        <span class="scan-format">${escapeHtml(item.format)}</span>
-                        <span class="scan-time"><i class="fa-regular fa-clock"></i> ${formatDate(item.timestamp)}</span>
+                        <!-- <span class="scan-format">${escapeHtml(item.format)}</span> -->
+                        <span class="scan-time">${formatDate(item.timestamp)}</span>
+                        <button class="btn-icon-danger" onclick="deleteItem('${item.id}')" title="Delete scan" style="padding: 0; margin-left: 0.25rem;">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
                     </div>
                 </div>
             `).join('');
