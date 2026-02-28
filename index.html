@@ -87,11 +87,19 @@
 
         #reader {
             width: 100%;
-            height: 100%;
             border-radius: 12px;
             overflow: hidden;
             border: 2px dashed rgba(108, 64, 153, 0.3);
             background: #f1f5f9;
+            padding-bottom: 10px;
+        }
+
+        #reader__scan_region {
+            /* Force the scanning region to be square on mobile */
+            aspect-ratio: 1 / 1;
+            max-height: 300px;
+            overflow: hidden;
+            border-radius: 10px;
         }
 
         #reader video {
@@ -439,10 +447,9 @@
             <p>Living Lab data by Bartlett CASA Connected Environments Lab</p>
         </header>
         <div class="glass-panel" style="padding: 1rem;">
-            <!-- Force the container to be exactly square based on its width to ensure a cropped view on mobile -->
-            <div
-                style="width: 100%; aspect-ratio: 1 / 1; max-height: 400px; overflow: hidden; display: flex; align-items: center; justify-content: center; border-radius: 12px; position: relative;">
-                <div id="reader" style="width: 100%; height: 100%; border: none;"></div>
+            <!-- Let the container grow naturally to show controls -->
+            <div style="width: 100%;">
+                <div id="reader" style="width: 100%; border: none;"></div>
             </div>
         </div>
 
