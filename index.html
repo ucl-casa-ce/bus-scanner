@@ -68,7 +68,7 @@
 
         header p {
             color: var(--text-muted);
-            font-size: 1rem;
+            font-size: 0.7rem;
             font-weight: 600;
         }
 
@@ -327,12 +327,17 @@
         .scan-format {
             background: #f1f5f9;
             color: var(--text-main);
-            padding: 2px 8px;
+            padding: 2px 6px;
             border-radius: 4px;
             text-transform: uppercase;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             font-weight: 700;
             letter-spacing: 0.5px;
+        }
+
+        .scan-time {
+            font-size: 0.85rem;
+            font-weight: 600;
         }
 
         .empty-state {
@@ -444,7 +449,7 @@
     <div class="container">
         <header>
             <h1><i class="fa-solid fa-barcode"></i> Bus Scanner</h1>
-            <p>Living Lab data by Bartlett CASA Connected Environments Lab</p>
+            <p>by Bartlett CASA Connected Environments</p>
         </header>
         <div class="glass-panel" style="padding: 1rem;">
             <!-- Let the container grow naturally to show controls -->
@@ -611,8 +616,7 @@
         function formatDate(isoString) {
             const date = new Date(isoString);
             return date.toLocaleString(undefined, {
-                month: 'short', day: 'numeric',
-                hour: '2-digit', minute: '2-digit', second: '2-digit'
+                hour: '2-digit', minute: '2-digit'
             });
         }
 
