@@ -528,8 +528,13 @@
                 "reader",
                 {
                     fps: 10,
-                    // Slightly taller box to ensure there's enough room to read
-                    qrbox: { width: 300, height: 120 },
+                    // Dynamic box size: 2/3 of viewfinder width to improve camera focus distance on phones
+                    qrbox: (viewfinderWidth, viewfinderHeight) => {
+                        return {
+                            width: Math.floor(viewfinderWidth * 0.66),
+                            height: 120
+                        };
+                    },
                     rememberLastUsedCamera: true,
                     // An aspect ratio of 1.0 makes it strictly square
                     // An aspect ratio of >1.0 makes it strictly landscape
