@@ -464,6 +464,15 @@
             <!-- Let the container grow naturally to show controls -->
             <div style="width: 100%;">
                 <div id="reader" style="width: 100%; border: none;"></div>
+                <div id="camera-controls" style="display: flex; justify-content: center; gap: 10px; margin-top: 15px;">
+                    <button class="btn btn-primary" id="start-btn" onclick="startScanner()" title="Start Camera">
+                        <i class="fa-solid fa-play"></i> <span>Start Camera</span>
+                    </button>
+                    <button class="btn btn-danger" id="stop-btn" onclick="stopScanner()" title="Stop Camera"
+                        style="display: none;">
+                        <i class="fa-solid fa-stop"></i> <span>Stop Camera</span>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -521,29 +530,70 @@
             initScanner();
         }
 
-        // Setup Html5Qrcode Scanner
-        function initScanner() {
-            // html5-qrcode supports both 2D and 1D barcodes out of the box.
-            const html5QrcodeScanner = new Html5QrcodeScanner(
-                "reader",
-                {
-                    fps: 10,
-                    // Slightly taller box to ensure there's enough room to read
-                    qrbox: { width: 300, height: 120 },
-                    rememberLastUsedCamera: true,
-                    // An aspect ratio of 1.0 makes it strictly square
-                    // An aspect ratio of >1.0 makes it strictly landscape
-                    // On mobile portrait, we want it square or very slightly landscape so the height is constrained
-                    aspectRatio: 1.2,
-                    supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA], // Forces camera only, hides "scan an image file" option
-                    experimentalFeatures: {
-                        useBarCodeDetectorIfSupported: true // Uses fast native browser barcode API if available
-                    }
-                },
-                /* verbose= */ false
-            );
+        // We need to keep the instance in a broader scope to stop it
+        let html5QrCode;
 
-            html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+        // Setup Html5Qrcode Scanner
+        async function initScanner() {
+            // Check if it's already running
+            if (html5QrCode && html5QrCode.isScanning) {
+                return;
+            }
+
+            // 1. Create the instance manually (gives us more control than the 'Scanner' version)
+            if (!html5QrCode) {
+                html5QrCode = new Html5Qrcode("reader");
+            }
+
+            const config = {
+                fps: 15, // Slightly higher FPS for smoother tracking
+                qrbox: { width: 280, height: 150 }, // Rectangular for 1D barcodes
+                aspectRatio: 1.777778, // Force 16:9 widescreen ratio
+                videoConstraints: {
+                    facingMode: "environment",
+                    // This is the "Magic" part: requesting 1080p
+                    width: { ideal: 1920 },
+                    height: { ideal: 1080 },
+                    // Advanced: try to force a further focus distance if the browser supports it
+                    focusMode: { ideal: "continuous" }
+                }
+            };
+
+            try {
+                // Update UI
+                document.getElementById('start-btn').style.display = 'none';
+                document.getElementById('stop-btn').style.display = 'inline-flex';
+
+                await html5QrCode.start(
+                    { facingMode: "environment" },
+                    config,
+                    onScanSuccess,
+                    onScanFailure
+                );
+            } catch (err) {
+                console.error("Unable to start scanning.", err);
+                document.getElementById('start-btn').style.display = 'inline-flex';
+                document.getElementById('stop-btn').style.display = 'none';
+                showToast("Failed to start camera", "error");
+            }
+        }
+
+        async function startScanner() {
+            await initScanner();
+        }
+
+        async function stopScanner() {
+            if (html5QrCode && html5QrCode.isScanning) {
+                try {
+                    await html5QrCode.stop();
+                    // Update UI
+                    document.getElementById('start-btn').style.display = 'inline-flex';
+                    document.getElementById('stop-btn').style.display = 'none';
+                } catch (err) {
+                    console.error("Failed to stop scanner.", err);
+                    showToast("Failed to stop camera", "error");
+                }
+            }
         }
 
         function onScanSuccess(decodedText, decodedResult) {
