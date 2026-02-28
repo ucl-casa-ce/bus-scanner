@@ -87,6 +87,7 @@
 
         #reader {
             width: 100%;
+            height: 100%;
             border-radius: 12px;
             overflow: hidden;
             border: 2px dashed rgba(108, 64, 153, 0.3);
@@ -95,6 +96,11 @@
 
         #reader video {
             border-radius: 12px;
+            /* In portrait mode, this forces the video to cover the available box 
+               instead of keeping its native tall portrait aspect ratio which wastes space */
+            object-fit: cover;
+            width: 100% !important;
+            height: 100% !important;
         }
 
         /* Override html5-qrcode styles */
@@ -432,9 +438,12 @@
             <h1><i class="fa-solid fa-barcode"></i> Bus Scanner</h1>
             <p>Living Lab data by Bartlett CASA Connected Environments Lab</p>
         </header>
-
-        <div class="glass-panel">
-            <div id="reader"></div>
+        <div class="glass-panel" style="padding: 1rem;">
+            <!-- Force the container to be exactly square based on its width to ensure a cropped view on mobile -->
+            <div
+                style="width: 100%; aspect-ratio: 1 / 1; max-height: 400px; overflow: hidden; display: flex; align-items: center; justify-content: center; border-radius: 12px; position: relative;">
+                <div id="reader" style="width: 100%; height: 100%; border: none;"></div>
+            </div>
         </div>
 
         <div class="glass-panel">
@@ -498,10 +507,13 @@
                 "reader",
                 {
                     fps: 10,
-                    // A rectangular box is much better optimized for 1D barcodes
-                    qrbox: { width: 300, height: 100 },
+                    // Slightly taller box to ensure there's enough room to read
+                    qrbox: { width: 300, height: 120 },
                     rememberLastUsedCamera: true,
-                    aspectRatio: 2.5, // 2.5 makes the camera box much shorter vertically while keeping the width
+                    // An aspect ratio of 1.0 makes it strictly square
+                    // An aspect ratio of >1.0 makes it strictly landscape
+                    // On mobile portrait, we want it square or very slightly landscape so the height is constrained
+                    aspectRatio: 1.0,
                     supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA], // Forces camera only, hides "scan an image file" option
                     experimentalFeatures: {
                         useBarCodeDetectorIfSupported: true // Uses fast native browser barcode API if available
