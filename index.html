@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScannerPro - Barcode Reader</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Html5Qrcode -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+    <style>
+        :root {
+            /* Students' Union UCL Colors */
+            --bg-color: #f8fafc;
+            --surface-color: #ffffff;
+            --primary-color: #6C4099;
+            /* Royal Purple */
+            --primary-hover: #5a3580;
+            --danger-color: #e11d48;
+            --danger-hover: #be123c;
+            --text-main: #082244;
+            /* Downriver (Navy) */
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --success-color: #16a34a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .glass-panel {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .glass-panel:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+        }
+
+        #reader {
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px dashed rgba(108, 64, 153, 0.3);
+            background: #f1f5f9;
+        }
+
+        #reader video {
+            border-radius: 12px;
+        }
+
+        /* Override html5-qrcode styles */
+        #reader__dashboard_section_csr span {
+            color: var(--text-main) !important;
+        }
+
+        #reader__dashboard_section_swaplink {
+            color: var(--primary-color) !important;
+            text-decoration: none;
+            margin-top: 10px;
+            display: inline-block;
+            font-weight: 600;
+        }
+
+        #reader button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+
+        #reader button:hover {
+            background: var(--primary-hover);
+        }
+
+        #reader select {
+            background: var(--surface-color);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .actions-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .actions-row h2 {
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-main);
+        }
+
+        .badge {
+            background: var(--primary-color);
+            color: white;
+            font-size: 0.8rem;
+            padding: 2px 8px;
+            border-radius: 99px;
+            font-weight: 600;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+        .btn i {
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 6px rgba(108, 64, 153, 0.2);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            box-shadow: 0 6px 8px rgba(108, 64, 153, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: white;
+            color: var(--danger-color);
+            border: 1px solid var(--danger-color);
+        }
+
+        .btn-danger:hover {
+            background: #fff1f2;
+            transform: translateY(-2px);
+        }
+
+        .btn-icon-danger {
+            background: transparent;
+            color: var(--text-muted);
+            border: none;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+
+        .btn-icon-danger:hover {
+            color: var(--danger-color);
+            background: #fff1f2;
+        }
+
+        .scans-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        /* Scrollbar */
+        .scans-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .scans-list::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
+        }
+
+        .scans-list::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .scans-list::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .scan-item {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            animation: slideIn 0.3s ease forwards;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+        }
+
+        .scan-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--primary-color);
+            border-radius: 4px 0 0 4px;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .scan-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .scan-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            word-break: break-all;
+            flex-grow: 1;
+        }
+
+        .scan-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .scan-format {
+            background: #f1f5f9;
+            color: var(--text-main);
+            padding: 2px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-muted);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            opacity: 0.3;
+        }
+
+        /* Toast Notifications */
+        #toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .toast {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--success-color);
+            color: var(--text-main);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideInRight 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            opacity: 0;
+            transform: translateX(100%);
+            font-weight: 600;
+        }
+
+        .toast i {
+            color: var(--success-color);
+            font-size: 1.2rem;
+        }
+
+        .toast.error i {
+            color: var(--danger-color);
+        }
+
+        .toast.warning i {
+            color: #f59e0b;
+        }
+
+        .toast.error {
+            border-left-color: var(--danger-color);
+        }
+
+        .toast.warning {
+            border-left-color: #f59e0b;
+        }
+
+        .toast.fade-out {
+            animation: fadeOutRight 0.3s ease forwards;
+        }
+
+        @keyframes slideInRight {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeOutRight {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+
+            to {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .btn span {
+                display: none;
+            }
+
+            .btn {
+                justify-content: center;
+                padding: 0.6rem;
+            }
+
+            .btn i {
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <header>
+            <h1><i class="fa-solid fa-barcode"></i> Bus Scanner</h1>
+            <p>Living Lab data by Bartlett CASA Connected Environments Lab</p>
+        </header>
+
+        <div class="glass-panel">
+            <div id="reader"></div>
+        </div>
+
+        <div class="glass-panel">
+            <div class="actions-row">
+                <h2>History <span class="badge" id="scan-count">0</span></h2>
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="downloadCSV()" title="Download CSV">
+                        <i class="fa-solid fa-file-csv"></i> <span>Export</span>
+                    </button>
+                    <button class="btn btn-danger" onclick="clearData()" title="Clear Data">
+                        <i class="fa-solid fa-trash-can"></i> <span>Clear</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="scans-list" id="scans-list">
+                <!-- Items will be injected here -->
+            </div>
+        </div>
+        <p>A practical tool developed by Bartlett UCL <a href="https://connected-environments.org/"
+                target="_blank">Connected Environments</a>
+            staff to make daily life a little easier.</p>
+    </div>
+
+    <div id="toast-container"></div>
+
+    <script>
+        // State
+        let scannedItems = JSON.parse(localStorage.getItem('barcodeData') || '[]');
+        let lastScannedText = '';
+        let lastScannedTime = 0;
+        let isProcessing = false;
+
+        // DOM Elements
+        const scansListEl = document.getElementById('scans-list');
+        const countBadgeEl = document.getElementById('scan-count');
+        const toastContainer = document.getElementById('toast-container');
+
+        // Initialize UI
+        function init() {
+            renderList();
+            initScanner();
+        }
+
+        // Setup Html5Qrcode Scanner
+        function initScanner() {
+            // html5-qrcode supports both 2D and 1D barcodes out of the box.
+            const html5QrcodeScanner = new Html5QrcodeScanner(
+                "reader",
+                {
+                    fps: 10,
+                    // A rectangular box is much better optimized for 1D barcodes
+                    qrbox: { width: 300, height: 100 },
+                    rememberLastUsedCamera: true,
+                    aspectRatio: 1.777778, // Standard 16:9 makes capturing wide 1D barcodes easier
+                    supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA], // Forces camera only, hides "scan an image file" option
+                    experimentalFeatures: {
+                        useBarCodeDetectorIfSupported: true // Uses fast native browser barcode API if available
+                    }
+                },
+                /* verbose= */ false
+            );
+
+            html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+        }
+
+        function onScanSuccess(decodedText, decodedResult) {
+            const now = Date.now();
+
+            // Immediately block if processing a scan right now
+            if (isProcessing) return;
+
+            // Debounce: prevent duplicate consecutive scans within 3 seconds
+            if (decodedText === lastScannedText && (now - lastScannedTime) < 3000) {
+                return;
+            }
+
+            isProcessing = true;
+
+            lastScannedText = decodedText;
+            lastScannedTime = now;
+
+            playBeep();
+
+            const formatName = decodedResult?.result?.format?.formatName || 'Unknown Format';
+
+            const item = {
+                id: crypto.randomUUID(),
+                text: decodedText,
+                format: formatName,
+                timestamp: new Date().toISOString()
+            };
+
+            scannedItems.unshift(item); // Add to beginning
+            saveData();
+            renderList();
+            showToast(`Scanned: ${decodedText.substring(0, 20)}${decodedText.length > 20 ? '...' : ''}`, 'success');
+
+            // Release lock after a brief pause
+            setTimeout(() => {
+                isProcessing = false;
+            }, 1000);
+        }
+
+        function onScanFailure(error) {
+            // handle scan failure, usually better to ignore and keep scanning
+        }
+
+        function playBeep() {
+            try {
+                const context = new (window.AudioContext || window.webkitAudioContext)();
+                if (context.state === 'suspended') {
+                    context.resume();
+                }
+                const oscillator = context.createOscillator();
+                const gainNode = context.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(context.destination);
+
+                oscillator.type = 'sine';
+                oscillator.frequency.value = 800; // 800 Hz
+
+                gainNode.gain.setValueAtTime(0, context.currentTime);
+                gainNode.gain.linearRampToValueAtTime(1, context.currentTime + 0.01);
+                // Sustain
+                gainNode.gain.setValueAtTime(1, context.currentTime + 0.05);
+                gainNode.gain.linearRampToValueAtTime(0, context.currentTime + 0.1);
+
+                oscillator.start(context.currentTime);
+                oscillator.stop(context.currentTime + 0.1);
+            } catch (e) {
+                console.error("Audio block", e);
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('barcodeData', JSON.stringify(scannedItems));
+        }
+
+        function formatDate(isoString) {
+            const date = new Date(isoString);
+            return date.toLocaleString(undefined, {
+                month: 'short', day: 'numeric',
+                hour: '2-digit', minute: '2-digit', second: '2-digit'
+            });
+        }
+
+        function renderList() {
+            countBadgeEl.textContent = scannedItems.length;
+
+            if (scannedItems.length === 0) {
+                scansListEl.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fa-solid fa-box-open"></i>
+                        <p>No barcodes scanned yet.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            scansListEl.innerHTML = scannedItems.map(item => `
+                <div class="scan-item">
+                    <div class="scan-header">
+                        <span class="scan-value">${escapeHtml(item.text)}</span>
+                        <button class="btn-icon-danger" onclick="deleteItem('${item.id}')" title="Delete scan">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                    <div class="scan-meta">
+                        <span class="scan-format">${escapeHtml(item.format)}</span>
+                        <span class="scan-time"><i class="fa-regular fa-clock"></i> ${formatDate(item.timestamp)}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function downloadCSV() {
+            if (scannedItems.length === 0) {
+                showToast("No data to export", "warning");
+                return;
+            }
+
+            const headers = ["ID", "Barcode Content", "Format", "Timestamp"];
+            const rows = scannedItems.map(item => {
+                const safeText = String(item.text).replace(/"/g, '""');
+                return `"${item.id}","${safeText}","${item.format}","${item.timestamp}"`;
+            });
+
+            const csvContent = [headers.join(","), ...rows].join("\n");
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `scans_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            showToast("Export successful!", "success");
+        }
+
+        function clearData() {
+            if (scannedItems.length === 0) return;
+
+            if (confirm("Are you sure you want to delete all scanned history? This cannot be undone.")) {
+                scannedItems = [];
+                saveData();
+                renderList();
+                showToast("Data cleared completely", "success");
+            }
+        }
+
+        function deleteItem(id) {
+            if (confirm("Remove this scan?")) {
+                scannedItems = scannedItems.filter(item => item.id !== id);
+                saveData();
+                renderList();
+                showToast("Scan removed", "success");
+            }
+        }
+
+        function escapeHtml(unsafe) {
+            return (unsafe || '').toString()
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+
+            let icon = 'fa-check-circle';
+            if (type === 'error') icon = 'fa-circle-xmark';
+            if (type === 'warning') icon = 'fa-triangle-exclamation';
+
+            toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${escapeHtml(message)}</span>`;
+
+            toastContainer.appendChild(toast);
+
+            // Remove after 3 seconds
+            setTimeout(() => {
+                toast.classList.add('fade-out');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300); // Wait for fade out animation
+            }, 3000);
+        }
+
+        // Start
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+
+</html>
