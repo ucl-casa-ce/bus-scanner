@@ -22,6 +22,7 @@
             --primary-hover: #5a3580;
             --danger-color: #e11d48;
             --danger-hover: #be123c;
+            --danger-bg: #fff1f2;
             --text-main: #082244;
             /* Downriver (Navy) */
             --text-muted: #64748b;
@@ -214,7 +215,7 @@
         }
 
         .btn-danger:hover {
-            background: #fff1f2;
+            background: var(--danger-bg);
             transform: translateY(-2px);
         }
 
@@ -231,7 +232,7 @@
 
         .btn-icon-danger:hover {
             color: var(--danger-color);
-            background: #fff1f2;
+            background: var(--danger-bg);
         }
 
         .scans-list {
@@ -530,7 +531,8 @@
         // Initialize UI
         function init() {
             renderList();
-            initScanner();
+            // Removed automatic initScanner() on load. 
+            // Auto-starting the camera on iOS Safari immediately after DOMContentLoaded routinely causes WebKit crashes.
         }
 
         // We need to keep the instance in a broader scope to stop it
@@ -551,15 +553,7 @@
             const config = {
                 fps: 15, // Slightly higher FPS for smoother tracking
                 qrbox: { width: 280, height: 150 }, // Rectangular for 1D barcodes
-                aspectRatio: 1.0, // Force a square aspect ratio (1:1) from the video
-                videoConstraints: {
-                    facingMode: "environment",
-                    // This is the "Magic" part: requesting 1080p
-                    width: { ideal: 1920 },
-                    height: { ideal: 1080 },
-                    // Advanced: try to force a further focus distance if the browser supports it
-                    focusMode: { ideal: "continuous" }
-                }
+                aspectRatio: 1.0 // Force a square aspect ratio (1:1) from the video
             };
 
             try {
@@ -567,6 +561,8 @@
                 document.getElementById('start-btn').style.display = 'none';
                 document.getElementById('stop-btn').style.display = 'inline-flex';
 
+                // Using simple {facingMode} instead of aggressive videoConstraints (1080p + continuous focus)
+                // forcing strict constraints in iOS Safari causes OverconstrainedError and sometimes panics the renderer.
                 await html5QrCode.start(
                     { facingMode: "environment" },
                     config,
@@ -577,7 +573,12 @@
                 console.error("Unable to start scanning.", err);
                 document.getElementById('start-btn').style.display = 'inline-flex';
                 document.getElementById('stop-btn').style.display = 'none';
-                showToast("Failed to start camera", "error");
+                
+                let errorMsg = "Failed to start camera";
+                if (err && (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError')) {
+                    errorMsg = "Camera access denied. Please allow camera in settings.";
+                }
+                showToast(errorMsg, "error");
             }
         }
 
@@ -619,8 +620,10 @@
 
             const formatName = decodedResult?.result?.format?.formatName || 'Unknown Format';
 
+            const safeId = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString() + Math.random().toString().slice(2);
+
             const item = {
-                id: crypto.randomUUID(),
+                id: safeId,
                 text: decodedText,
                 format: formatName,
                 timestamp: new Date().toISOString()
